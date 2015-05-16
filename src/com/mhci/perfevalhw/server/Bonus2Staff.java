@@ -1,10 +1,10 @@
 package com.mhci.perfevalhw.server;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
 import com.mhci.perfevalhw.Event;
+import com.mhci.perfevalhw.QueueWithNotifer;
 import com.mhci.perfevalhw.UserInfo;
 import com.mhci.perfevalhw.BaseClass.BaseEventGenerator;
+import com.mhci.perfevalhw.distribution.BaseDistribution;
 import com.mhci.perfevalhw.distribution.ExponentialDistribution;
 import com.mhci.perfevalhw.distribution.PositiveNormalDistribution;
 import com.mhci.perfevalhw.enums.EventType;
@@ -17,10 +17,14 @@ public class Bonus2Staff extends BasicStaff implements ConditionChecker{
 	//Go to Restroom Event Generator
 	private BaseEventGenerator staffArrivalEventGenerator;
 	
-	public Bonus2Staff(float interRestRate, float serviceMean, float serviceVariance, LinkedBlockingQueue<UserInfo> queue) {
+	public Bonus2Staff(float interRestRate, float serviceMean, float serviceVariance, QueueWithNotifer queue) {
 		super(new PositiveNormalDistribution(serviceMean, serviceVariance), queue);
 		staffArrivalEventGenerator = new BaseEventGenerator(EventType.Arrival, new ExponentialDistribution(interRestRate));
-		
+	}
+	
+	public Bonus2Staff(BaseDistribution interRestTimeDist, BaseDistribution serviceTimeDist, QueueWithNotifer queue) {
+		super(serviceTimeDist, queue);
+		staffArrivalEventGenerator = new BaseEventGenerator(EventType.Arrival, interRestTimeDist);
 	}
 	
 	private void genGoToRestroomEventAndScheduleIt() {

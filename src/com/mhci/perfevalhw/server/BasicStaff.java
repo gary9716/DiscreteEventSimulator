@@ -1,9 +1,7 @@
 package com.mhci.perfevalhw.server;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
 import com.mhci.perfevalhw.Event;
-import com.mhci.perfevalhw.UserInfo;
+import com.mhci.perfevalhw.QueueWithNotifer;
 import com.mhci.perfevalhw.BaseClass.BaseEventGenerator;
 import com.mhci.perfevalhw.distribution.BaseDistribution;
 import com.mhci.perfevalhw.distribution.ExponentialDistribution;
@@ -17,13 +15,13 @@ public class BasicStaff extends AbstractServer{
 	private StaffState mState = StaffState.Idle;
 	protected EventDispatcher sysEventDispatcher = EventDispatcher.instance;
 	
-	public BasicStaff(float serviceRate, LinkedBlockingQueue<UserInfo> queue) {
+	public BasicStaff(float serviceRate, QueueWithNotifer queue) {
 		super(queue);
 		setState(StaffState.Idle);
 		servicedUserDepartureEventGenerator = new BaseEventGenerator(EventType.Departure, new ExponentialDistribution(serviceRate));
 	}
 	
-	public BasicStaff(BaseDistribution serviceTimeDist, LinkedBlockingQueue<UserInfo> queue) {
+	public BasicStaff(BaseDistribution serviceTimeDist, QueueWithNotifer queue) {
 		super(queue);
 		setState(StaffState.Idle);
 		servicedUserDepartureEventGenerator = new BaseEventGenerator(EventType.Departure, serviceTimeDist);

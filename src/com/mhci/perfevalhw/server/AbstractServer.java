@@ -3,6 +3,7 @@ package com.mhci.perfevalhw.server;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.mhci.perfevalhw.Event;
+import com.mhci.perfevalhw.QueueWithNotifer;
 import com.mhci.perfevalhw.UserInfo;
 import com.mhci.perfevalhw.BaseClass.BaseEventGenerator;
 import com.mhci.perfevalhw.enums.EventType;
@@ -17,6 +18,11 @@ public abstract class AbstractServer implements EventListener{
 	protected Timer sharedTimer = Timer.instance;
 	
 	protected LinkedBlockingQueue<UserInfo> mQueue;
+	
+	public AbstractServer(QueueWithNotifer queueWithNotifer) {
+		mQueue = queueWithNotifer.mQueue;
+		queueWithNotifer.registerEvent(this); //register to all event passed to Queue
+	}
 	
 	public AbstractServer(LinkedBlockingQueue<UserInfo> queue) {
 		mQueue = queue;
