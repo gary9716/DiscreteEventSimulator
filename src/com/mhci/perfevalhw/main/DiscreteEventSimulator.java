@@ -18,7 +18,7 @@ import com.mhci.perfevalhw.singleton.EventDispatcher;
 import com.mhci.perfevalhw.singleton.StatisticsManager;
 import com.mhci.perfevalhw.singleton.Timer;
 
-public class DiscreteTimeSimulator {
+public class DiscreteEventSimulator {
 	private BasePolicy policy = new BasePolicy();
 	private QueueWithNotifer[] customerQueueWithNotifers;
 	private BasicStaff[] staffs;
@@ -136,7 +136,7 @@ public class DiscreteTimeSimulator {
 	
 	public static void main(String[] args) {
 		// TODO 3 simulations, IO
-		(new DiscreteTimeSimulator()).startExperiment();
+		(new DiscreteEventSimulator()).startExperiment();
 	}
 
 }
