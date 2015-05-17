@@ -5,5 +5,7 @@ public enum EventType {
 	StartServiced,
 	//EndServiced, now is the same with departure
 	Departure,
+	GenerateArrival,
+	EndSimulation,
 	Any //represent any event
 }

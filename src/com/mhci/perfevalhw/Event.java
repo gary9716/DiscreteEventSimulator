@@ -8,6 +8,7 @@ import com.mhci.perfevalhw.interfaces.EventGenerator;
 public class Event {	
 	public EventType eventType;
 	public float eventTime;
+	
 	public EventGenerator eventSource = null;
 	public UserInfo relatedUserInfo = null; //for StatisticsManager, it could use this calculate info.
 	

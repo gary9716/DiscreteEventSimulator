@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
 
-import com.mhci.perfevalhw.SimulationConfig.SimulationName;
 import com.mhci.perfevalhw.distribution.ExponentialDistribution;
 import com.mhci.perfevalhw.distribution.PositiveNormalDistribution;
+import com.mhci.perfevalhw.enums.UserType;
+import com.mhci.perfevalhw.singleton.SimulationConfig;
 import com.mhci.perfevalhw.singleton.StatisticsManager;
+import com.mhci.perfevalhw.singleton.SimulationConfig.SimulationName;
 
 public class FileManager {
 	
@@ -16,9 +18,10 @@ public class FileManager {
 	private final static String configFileName = "input.txt";
 	private final static String resultFileName = "output.txt";
 	
-	private StatisticsManager statisticsManager = StatisticsManager.instance;
 	private File configFilesDir;
 	private File resultFilesDir;
+	private SimulationConfig simConfig = SimulationConfig.instance;
+	private StatisticsManager statisticsManager = StatisticsManager.instance;
 	
 	public FileManager(String configsPath, String resultsPath) {
 		configFilesDir = new File(configsPath);
@@ -54,7 +57,28 @@ public class FileManager {
 		PrintWriter writer = null;
 		try {
 			writer = new PrintWriter(file);
-			//TODO : get data from statistics manager
+			
+			writer.println("Average customer waiting time: " + 
+								statisticsManager.averageWaitingTime(UserType.PostOfficeCustomer)
+			);
+			
+			writer.println("Average system time: " + 
+								statisticsManager.averageSystemTime()
+			);
+			
+			if(simName == SimulationName.Bonus2) {
+				writer.println("Average staff waiting time: " + 
+						statisticsManager.averageWaitingTime(UserType.RestroomUser)
+				);
+			}
+			
+			writer.println("System utilization ratio: " + 
+					(1 - statisticsManager.utilizationRatio(0))
+			);
+			
+			writer.println("Full utilization ratio: " + 
+					statisticsManager.utilizationRatio(simConfig.numStaffs)
+			);
 			
 		}
 		catch(Exception e) {
@@ -71,39 +95,39 @@ public class FileManager {
 	}
 	
 	public SimulationConfig getSimulationConfig(SimulationName simName) {
-		SimulationConfig config = new SimulationConfig();
-		config.simulationName = simName;
+		simConfig.reset();
+		simConfig.simulationName = simName;
 		String[] data = readFromFileAndParse(simName.toString() + "_" + configFileName);
 		
 		try {
 			if(simName == SimulationName.Basic || simName == SimulationName.Bonus1) {
-				config.setDistribution(
+				simConfig.setDistribution(
 						SimulationConfig.customerInterArrivalTimeDistKey, 
 						new ExponentialDistribution(Float.valueOf(data[0]))
 				);
 				
-				config.setDistribution(
+				simConfig.setDistribution(
 						SimulationConfig.staffInterServiceTimeDistKey, 
 						new ExponentialDistribution(Float.valueOf(data[1]))
 				);
-				config.simulationTime = Integer.parseInt(data[2]);
+				simConfig.simulationTime = Integer.parseInt(data[2]);
 			}
 			else if(simName == SimulationName.Bonus2) {
-				config.setDistribution(
+				simConfig.setDistribution(
 						SimulationConfig.customerInterArrivalTimeDistKey, 
 						new PositiveNormalDistribution(Float.valueOf(data[0]), Float.valueOf(data[1]))
 				);
 				
-				config.setDistribution(
+				simConfig.setDistribution(
 						SimulationConfig.staffInterServiceTimeDistKey, 
 						new PositiveNormalDistribution(Float.valueOf(data[2]), Float.valueOf(data[3]))
 				);
-				config.simulationTime = Integer.parseInt(data[4]);
-				config.setDistribution(
+				simConfig.simulationTime = Integer.parseInt(data[4]);
+				simConfig.setDistribution(
 						SimulationConfig.staffInterRestTimeDistKey, 
-						new ExponentialDistribution(Float.valueOf(data[5]))
+						new ExponentialDistribution(1 / Float.valueOf(data[5]))
 				);
-				config.setDistribution(
+				simConfig.setDistribution(
 						SimulationConfig.restroomInterServiceTimeDistKey, 
 						new ExponentialDistribution(Float.valueOf(data[6]))
 				);
@@ -113,7 +137,7 @@ public class FileManager {
 			e.printStackTrace();
 		}
 		
-		return config;
+		return simConfig;
 	}
 	
 	private String[] readFromFileAndParse(String fileName) {

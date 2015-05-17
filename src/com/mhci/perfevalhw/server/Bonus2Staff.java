@@ -14,21 +14,20 @@ import com.mhci.perfevalhw.interfaces.ConditionChecker;
 
 public class Bonus2Staff extends BasicStaff implements ConditionChecker{
 	
-	//Go to Restroom Event Generator
-	private BaseEventGenerator staffArrivalEventGenerator;
+	private BaseEventGenerator goRestroomEventGenerator;
 	
 	public Bonus2Staff(float interRestRate, float serviceMean, float serviceVariance, QueueWithNotifer queue) {
 		super(new PositiveNormalDistribution(serviceMean, serviceVariance), queue);
-		staffArrivalEventGenerator = new BaseEventGenerator(EventType.Arrival, new ExponentialDistribution(interRestRate));
+		goRestroomEventGenerator = new BaseEventGenerator(EventType.Arrival, new ExponentialDistribution(interRestRate));
 	}
 	
 	public Bonus2Staff(BaseDistribution interRestTimeDist, BaseDistribution serviceTimeDist, QueueWithNotifer queue) {
 		super(serviceTimeDist, queue);
-		staffArrivalEventGenerator = new BaseEventGenerator(EventType.Arrival, interRestTimeDist);
+		goRestroomEventGenerator = new BaseEventGenerator(EventType.Arrival, interRestTimeDist);
 	}
 	
 	private void genGoToRestroomEventAndScheduleIt() {
-		Event event = staffArrivalEventGenerator.generateEventWithDistribution(sharedTimer.currentTime());
+		Event event = goRestroomEventGenerator.generateEventWithDistribution(sharedTimer.currentTime());
 		event.relatedUserInfo = new UserInfo(UserType.RestroomUser);
 		event.relatedUserInfo.userObj = this;
 		event.setConditionChecker(this);
@@ -50,7 +49,9 @@ public class Bonus2Staff extends BasicStaff implements ConditionChecker{
 			return;
 		}
 		
-		//TODO : use genArrivalEventToGenerate Initial Arrival Event
+		if(event.eventType == EventType.GenerateArrival) {
+			genGoToRestroomEventAndScheduleIt();
+		}
 		
 		super.eventHandler(event);
 	}
@@ -58,7 +59,7 @@ public class Bonus2Staff extends BasicStaff implements ConditionChecker{
 	@Override
 	protected void tryToServiceAndScheduleNextDepartureEvent() {
 		System.out.println("tryToServiceAndScheduleNextDepartureEvent in Bonus2 Staff");
-		Event failedEvent = staffArrivalEventGenerator.getAFailureEvent();
+		Event failedEvent = goRestroomEventGenerator.getAFailureEvent();
 		if(failedEvent != null) { 
 			failedEvent.eventTime = sharedTimer.currentTime();
 			sysEventDispatcher.schedule(failedEvent);
@@ -72,7 +73,7 @@ public class Bonus2Staff extends BasicStaff implements ConditionChecker{
 	@Override
 	public boolean eventCanHappen(Event event) {
 		//if staff is servicing a customer, he/she cannot go to restroom
-		if(event.eventSource == staffArrivalEventGenerator && getState() == StaffState.Working) { 
+		if(event.eventSource == goRestroomEventGenerator && getState() == StaffState.Working) { 
 			return false;
 		}
 		

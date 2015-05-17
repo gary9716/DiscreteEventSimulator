@@ -7,8 +7,10 @@ import com.mhci.perfevalhw.QueueWithNotifer;
 import com.mhci.perfevalhw.UserInfo;
 import com.mhci.perfevalhw.BaseClass.BaseEventGenerator;
 import com.mhci.perfevalhw.enums.EventType;
+import com.mhci.perfevalhw.interfaces.EventGenerator;
 import com.mhci.perfevalhw.interfaces.EventListener;
 import com.mhci.perfevalhw.singleton.EventDispatcher;
+import com.mhci.perfevalhw.singleton.StatisticsManager;
 import com.mhci.perfevalhw.singleton.Timer;
 
 public abstract class AbstractServer implements EventListener{
@@ -16,7 +18,7 @@ public abstract class AbstractServer implements EventListener{
 	protected BaseEventGenerator servicedUserDepartureEventGenerator = null;
 	protected EventDispatcher sysEventDispatcher = EventDispatcher.instance;
 	protected Timer sharedTimer = Timer.instance;
-	
+	protected StatisticsManager statisticsManager = StatisticsManager.instance;
 	protected LinkedBlockingQueue<UserInfo> mQueue;
 	
 	public AbstractServer(QueueWithNotifer queueWithNotifer) {
@@ -29,16 +31,15 @@ public abstract class AbstractServer implements EventListener{
 	}
 	
 	protected UserInfo dequeue() {
-		while(true) {
-			if(!mQueue.isEmpty()) {
-				try {
-					return mQueue.take();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-			else {
-				return null;
+		return mQueue.poll();
+	}
+	
+	@Override
+	public void eventHandler(Event event) {
+		if(event.eventType == EventType.EndSimulation) {
+			UserInfo userInfo = null;
+			while((userInfo = dequeue()) != null) {
+				statisticsManager.endSimUserQueue.offer(userInfo);
 			}
 		}
 	}

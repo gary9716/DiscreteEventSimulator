@@ -9,11 +9,14 @@ import com.mhci.perfevalhw.enums.EventType;
 import com.mhci.perfevalhw.enums.StaffState;
 import com.mhci.perfevalhw.enums.UserType;
 import com.mhci.perfevalhw.singleton.EventDispatcher;
+import com.mhci.perfevalhw.singleton.StatisticsManager;
 
 public class BasicStaff extends AbstractServer{
 	
+	private StaffState lastState = null;
 	private StaffState mState = StaffState.Idle;
 	protected EventDispatcher sysEventDispatcher = EventDispatcher.instance;
+	protected StatisticsManager statisticsManager = StatisticsManager.instance;
 	
 	public BasicStaff(float serviceRate, QueueWithNotifer queue) {
 		super(queue);
@@ -29,6 +32,8 @@ public class BasicStaff extends AbstractServer{
 	
 	@Override
 	public void eventHandler(Event event) {
+		super.eventHandler(event);
+		
 		System.out.println("eventHandler in Basic Staff");
 		if(event.eventSource == servicedUserDepartureEventGenerator) {
 			tryToServiceAndScheduleNextDepartureEvent();
@@ -51,6 +56,10 @@ public class BasicStaff extends AbstractServer{
 		}
 	}
 	
+	public boolean isWorking() {
+		return (mState == StaffState.Working);
+	}
+	
 	protected StaffState getState() {
 		return mState;
 	}
@@ -60,6 +69,17 @@ public class BasicStaff extends AbstractServer{
 		if(mState == StaffState.Idle) {
 			currentServicedUserInfo = null;
 		}
+		
+		if(lastState != mState) { // state transition
+			if(mState == StaffState.Working) {
+				statisticsManager.currentNumWorkingStaffs++;
+			}
+			else if(lastState == StaffState.Working){
+				statisticsManager.currentNumWorkingStaffs--;
+			}
+		}
+		
+		lastState = mState;
 	}
 	
 }

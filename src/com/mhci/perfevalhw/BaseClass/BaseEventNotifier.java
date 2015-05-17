@@ -8,7 +8,7 @@ import com.mhci.perfevalhw.enums.EventType;
 import com.mhci.perfevalhw.interfaces.EventListener;
 import com.mhci.perfevalhw.interfaces.EventNotifier;
 
-public class BaseEventNotifier implements EventNotifier{
+public class BaseEventNotifier implements EventNotifier, EventListener{
 
 	private HashMap<EventType, LinkedList<EventListener>> listenersMap = new HashMap<EventType, LinkedList<EventListener>>();
 	
@@ -59,11 +59,9 @@ public class BaseEventNotifier implements EventNotifier{
 			}
 		}
 	}
-	
-	
-	
+
 	@Override
-	public void notifyEvent(Event event) {
+	public void eventHandler(Event event) {
 		notifyWithType(EventType.Any, event);
 		notifyWithType(event.eventType, event);
 	}

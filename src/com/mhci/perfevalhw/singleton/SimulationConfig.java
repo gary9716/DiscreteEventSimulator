@@ -1,4 +1,4 @@
-package com.mhci.perfevalhw;
+package com.mhci.perfevalhw.singleton;
 
 import java.util.HashMap;
 
@@ -16,8 +16,7 @@ public class SimulationConfig {
 		Bonus2
 	}
 	
-	private HashMap<String, BaseDistribution> distributions = new HashMap<String, BaseDistribution>();
-	
+	public final static SimulationConfig instance = new SimulationConfig();
 	public final static String staffInterServiceTimeDistKey = "staff.interServiceTime";
 	public final static String staffInterRestTimeDistKey = "staff.interRestTime";
 	public final static String customerInterArrivalTimeDistKey = "customer.interArrivalTime";
@@ -27,6 +26,8 @@ public class SimulationConfig {
 	public CustomerQueueMode customerQueueMode;
 	public int numStaffs;
 	public int simulationTime;
+	
+	private HashMap<String, BaseDistribution> distributions = new HashMap<String, BaseDistribution>();
 	
 	public void setDistribution(String distKey, BaseDistribution dist) {
 		distributions.put(distKey, dist);
@@ -44,8 +45,7 @@ public class SimulationConfig {
 		simulationTime = 0;
 	}
 	
-	public SimulationConfig() {
-		reset();
+	private SimulationConfig() {
 	}
 	
 }

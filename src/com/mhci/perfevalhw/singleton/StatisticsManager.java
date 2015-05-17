@@ -1,28 +1,99 @@
 package com.mhci.perfevalhw.singleton;
 
+import java.util.concurrent.LinkedBlockingQueue;
+
 import com.mhci.perfevalhw.Event;
+import com.mhci.perfevalhw.UserInfo;
+import com.mhci.perfevalhw.enums.EventType;
+import com.mhci.perfevalhw.enums.UserType;
 import com.mhci.perfevalhw.interfaces.EventListener;
+import com.mhci.perfevalhw.server.BasicStaff;
 
 public class StatisticsManager implements EventListener{
 	
 	public final static StatisticsManager instance = new StatisticsManager();
-	private int totalSimulationTime;
+	public int currentNumWorkingStaffs = 0;
+	//When EndSimulation event happen, all server would dequeue rest of userInfos To this queue.
+	public LinkedBlockingQueue<UserInfo> endSimUserQueue = new LinkedBlockingQueue<UserInfo>(); 
 	
-	public StatisticsManager() {
+	private int totalSimulationTime = 0;
+	private int totalNumStaffs = 0;
+	private int lastNumWorkingStaffs = 0;
+	private float lastEventTime = 0;
+	
+	//statistics info
+	private float[] timeLen = null; //time taken in different number of staff state.
+	private int[] numUsers = null; //number of users who have been to a server
+	private float[] totalWaitingTime = null;
+	private float totalPostOfficeCustomersSystemTime = 0;
+	
+	private StatisticsManager() {
+	}
+	
+	public void reset(SimulationConfig config) {
+		totalSimulationTime = config.simulationTime;
+		totalNumStaffs = config.numStaffs;
+		lastNumWorkingStaffs = 0;
+		lastEventTime = 0;
+		timeLen = new float[totalNumStaffs + 1];
+		for(int i = 0;i <= totalNumStaffs;i++) {
+			timeLen[i] = 0;
+		}
+		numUsers = new int[UserType.NumUserTypes.ordinal()];
+		totalWaitingTime = new float[UserType.NumUserTypes.ordinal()];
+		totalPostOfficeCustomersSystemTime = 0;
 		
+		currentNumWorkingStaffs = 0;
+		endSimUserQueue.clear();
+	}
+	
+	private int numWorkingStaffsNow() {
+		return currentNumWorkingStaffs;
 	}
 	
 	@Override
 	public void eventHandler(Event event) {
+		UserInfo userInfo = event.relatedUserInfo;
+		EventType eventType = event.eventType;
+		timeLen[lastNumWorkingStaffs] += (event.eventTime - lastEventTime);
 		
+		if(eventType == EventType.Arrival) {
+			numUsers[userInfo.mUserType.ordinal()]++;
+		}
+		else if(eventType == EventType.StartServiced) {
+			totalWaitingTime[userInfo.mUserType.ordinal()] += (event.eventTime - userInfo.getEvent(EventType.Arrival).eventTime);
+		}
+		else if(eventType == EventType.Departure && userInfo.mUserType == UserType.PostOfficeCustomer) {
+			totalPostOfficeCustomersSystemTime += (event.eventTime - userInfo.getEvent(EventType.Arrival).eventTime);
+		}
+		else if(eventType == EventType.EndSimulation) {
+			//Get all users that haven't been serviced at the end of simulation time
+			while((userInfo = endSimUserQueue.poll()) != null) {
+				totalWaitingTime[userInfo.mUserType.ordinal()] += (event.eventTime - userInfo.getEvent(EventType.Arrival).eventTime);
+			}
+		}
+		
+		lastNumWorkingStaffs = numWorkingStaffsNow();
+		lastEventTime = event.eventTime;
 	}
 	
-	public void setSimulationTime(int time) {
-		totalSimulationTime = time;
+	//calculate metrics
+	
+	public float averageWaitingTime(UserType userType) {
+		return totalWaitingTime[userType.ordinal()] / numUsers[userType.ordinal()];
 	}
 	
-	public void reset() {
-		//TODO : reset all variables
+	public float averageSystemTime() {
+		return totalPostOfficeCustomersSystemTime / numUsers[UserType.PostOfficeCustomer.ordinal()];
 	}
-
+	
+	public float utilizationRatio(int numStaffs) {
+		if(numStaffs <= totalNumStaffs) {
+			return timeLen[numStaffs] / totalSimulationTime;
+		}
+		else {
+			return 0;
+		}
+	}
+	
 }

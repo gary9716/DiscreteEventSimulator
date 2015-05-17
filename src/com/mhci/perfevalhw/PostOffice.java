@@ -18,7 +18,7 @@ public class PostOffice implements EventListener{
 	@Override
 	public void eventHandler(Event event) {
 		if(event.eventType == EventType.Arrival && event.relatedUserInfo.mUserType == UserType.PostOfficeCustomer) { //selective notify
-			mPolicy.decide(mSysQueues).notifyEvent(event);
+			mPolicy.decide(mSysQueues).eventHandler(event);
 		}
 		else { //broadcast
 			broadcast(event);
@@ -27,7 +27,7 @@ public class PostOffice implements EventListener{
 	
 	private void broadcast(Event event) {
 		for(QueueWithNotifer queue : mSysQueues) {
-			queue.notifyEvent(event);
+			queue.eventHandler(event);
 		}
 	}
 	

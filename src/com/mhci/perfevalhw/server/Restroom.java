@@ -25,12 +25,18 @@ public class Restroom extends AbstractServer {
 	
 	@Override
 	public void eventHandler(Event event) {
-		if(currentServicedUserInfo == null && event.eventType == EventType.Arrival && event.relatedUserInfo.mUserType == UserType.RestroomUser) {
-			super.tryToServiceAndScheduleNextDepartureEvent();
+		super.eventHandler(event);
+		
+		if(event.eventType == EventType.Arrival && event.relatedUserInfo.mUserType == UserType.RestroomUser) {
+			mQueue.add(event.relatedUserInfo);
+			if(currentServicedUserInfo == null) {
+				super.tryToServiceAndScheduleNextDepartureEvent();
+			}
 		}
 		else if(event.eventType == EventType.Departure && event.eventSource == servicedUserDepartureEventGenerator) {
 			super.tryToServiceAndScheduleNextDepartureEvent();
 		}
+		
 	}
 
 }

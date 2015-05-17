@@ -28,8 +28,9 @@ public class CustomerSource implements EventListener {
 		if(event.eventType == EventType.Arrival && event.eventSource == customerArrivalEventGenerator) {
 			genEventAndScheduleIt();
 		}
-		
-		//TODO : use genArrivalEventToGenerate Initial Arrival Event
+		else if(event.eventType == EventType.GenerateArrival) {
+			genEventAndScheduleIt();
+		}
 		
 	}
 

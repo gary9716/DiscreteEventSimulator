@@ -5,10 +5,13 @@ import java.util.PriorityQueue;
 
 import com.mhci.perfevalhw.Event;
 import com.mhci.perfevalhw.BaseClass.BaseEventNotifier;
+import com.mhci.perfevalhw.enums.EventType;
 
 public class EventDispatcher extends BaseEventNotifier implements Comparator<Event> {
 	public final static EventDispatcher instance  = new EventDispatcher();
 	
+	private Timer shareTimer = Timer.instance;
+	private SimulationConfig simConfig = SimulationConfig.instance;
 	private PriorityQueue<Event> eventQueue = new PriorityQueue<Event>(0, this);
 	public EventDispatcher() {
 	}
@@ -26,9 +29,22 @@ public class EventDispatcher extends BaseEventNotifier implements Comparator<Eve
 		if(!eventQueue.isEmpty()) {
 			Event event = eventQueue.remove();
 			if(event.isEventConditionFulfilled()) {
-				notifyEvent(event);
+				if(event.eventTime > simConfig.simulationTime) { 
+					//discard this event and dispatch EndSimulation event
+					eventHandler(genEvent(EventType.EndSimulation, simConfig.simulationTime));
+				}
+				else {
+					eventHandler(event);
+				}
 			}
 		}
+		else {
+			eventHandler(genEvent(EventType.GenerateArrival, shareTimer.currentTime()));
+		}
+	}
+	
+	private Event genEvent(EventType eventType, float eventTime) {
+		return new Event(eventType, eventTime);
 	}
 	
 	public void reset() {

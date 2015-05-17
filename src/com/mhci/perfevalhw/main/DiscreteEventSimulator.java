@@ -6,8 +6,6 @@ import com.mhci.perfevalhw.CustomerSource;
 import com.mhci.perfevalhw.FileManager;
 import com.mhci.perfevalhw.PostOffice;
 import com.mhci.perfevalhw.QueueWithNotifer;
-import com.mhci.perfevalhw.SimulationConfig;
-import com.mhci.perfevalhw.SimulationConfig.SimulationName;
 import com.mhci.perfevalhw.distribution.BaseDistribution;
 import com.mhci.perfevalhw.distribution.ExponentialDistribution;
 import com.mhci.perfevalhw.enums.UserType;
@@ -15,8 +13,10 @@ import com.mhci.perfevalhw.server.BasicStaff;
 import com.mhci.perfevalhw.server.Bonus2Staff;
 import com.mhci.perfevalhw.server.Restroom;
 import com.mhci.perfevalhw.singleton.EventDispatcher;
+import com.mhci.perfevalhw.singleton.SimulationConfig;
 import com.mhci.perfevalhw.singleton.StatisticsManager;
 import com.mhci.perfevalhw.singleton.Timer;
+import com.mhci.perfevalhw.singleton.SimulationConfig.SimulationName;
 
 public class DiscreteEventSimulator {
 	private BasePolicy policy = new BasePolicy();
@@ -32,7 +32,6 @@ public class DiscreteEventSimulator {
 	private void initVariables() {
 		sharedTimer.reset();
 		sysEventDispatcher.reset();
-		statisticsManager.reset();
 	}
 	
 	private void postOfficeSetup(SimulationConfig simConfig) {
@@ -85,7 +84,7 @@ public class DiscreteEventSimulator {
 	private void doSimulationAndOutputResult(SimulationConfig simConfig) {
 		
 		initVariables();
-		statisticsManager.setSimulationTime(simConfig.simulationTime);
+		statisticsManager.reset(simConfig);
 		CustomerSource customerSrc = new CustomerSource(
 				simConfig.getDistribution(SimulationConfig.customerInterArrivalTimeDistKey)
 		);
@@ -109,8 +108,13 @@ public class DiscreteEventSimulator {
 		
 	}
 	
+	private final static float EPSILON = 1e-30f;
+	private boolean approximateEqualZero(float val) {
+		return (Math.abs(val) < EPSILON);
+	}
+	
 	private void startSimulation(int totalSimulationTime) {
-		while(sharedTimer.currentTime() < totalSimulationTime) {
+		while(!approximateEqualZero(sharedTimer.currentTime() - totalSimulationTime)) {
 			sysEventDispatcher.dispatch();
 		}
 	}
