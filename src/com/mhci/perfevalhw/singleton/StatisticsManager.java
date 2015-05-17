@@ -13,6 +13,7 @@ public class StatisticsManager implements EventListener{
 	
 	public final static StatisticsManager instance = new StatisticsManager();
 	public int currentNumWorkingStaffs = 0;
+	public int numDeparturedPostOfficeCustomers = 0;
 	//When EndSimulation event happen, all server would dequeue rest of userInfos To this queue.
 	public LinkedBlockingQueue<UserInfo> endSimUserQueue = new LinkedBlockingQueue<UserInfo>(); 
 	
@@ -23,7 +24,7 @@ public class StatisticsManager implements EventListener{
 	
 	//statistics info
 	private float[] timeLen = null; //time taken in different number of staff state.
-	private int[] numUsers = null; //number of users who have been to a server
+	private int[] numArrivedUsers = null; //number of users who have been to a server
 	private float[] totalWaitingTime = null;
 	private float totalPostOfficeCustomersSystemTime = 0;
 	
@@ -39,11 +40,12 @@ public class StatisticsManager implements EventListener{
 		for(int i = 0;i <= totalNumStaffs;i++) {
 			timeLen[i] = 0;
 		}
-		numUsers = new int[UserType.NumUserTypes.ordinal()];
+		numArrivedUsers = new int[UserType.NumUserTypes.ordinal()];
 		totalWaitingTime = new float[UserType.NumUserTypes.ordinal()];
 		totalPostOfficeCustomersSystemTime = 0;
 		
 		currentNumWorkingStaffs = 0;
+		numDeparturedPostOfficeCustomers = 0;
 		endSimUserQueue.clear();
 	}
 	
@@ -58,12 +60,13 @@ public class StatisticsManager implements EventListener{
 		timeLen[lastNumWorkingStaffs] += (event.eventTime - lastEventTime);
 		
 		if(eventType == EventType.Arrival) {
-			numUsers[userInfo.mUserType.ordinal()]++;
+			numArrivedUsers[userInfo.mUserType.ordinal()]++;
 		}
 		else if(eventType == EventType.StartServiced) {
 			totalWaitingTime[userInfo.mUserType.ordinal()] += (event.eventTime - userInfo.getEvent(EventType.Arrival).eventTime);
 		}
 		else if(eventType == EventType.Departure && userInfo.mUserType == UserType.PostOfficeCustomer) {
+			numDeparturedPostOfficeCustomers++;
 			totalPostOfficeCustomersSystemTime += (event.eventTime - userInfo.getEvent(EventType.Arrival).eventTime);
 		}
 		else if(eventType == EventType.EndSimulation) {
@@ -80,11 +83,11 @@ public class StatisticsManager implements EventListener{
 	//calculate metrics
 	
 	public float averageWaitingTime(UserType userType) {
-		return totalWaitingTime[userType.ordinal()] / numUsers[userType.ordinal()];
+		return totalWaitingTime[userType.ordinal()] / numArrivedUsers[userType.ordinal()];
 	}
 	
 	public float averageSystemTime() {
-		return totalPostOfficeCustomersSystemTime / numUsers[UserType.PostOfficeCustomer.ordinal()];
+		return totalPostOfficeCustomersSystemTime / numDeparturedPostOfficeCustomers;
 	}
 	
 	public float utilizationRatio(int numStaffs) {
