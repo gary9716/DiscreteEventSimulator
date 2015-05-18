@@ -12,7 +12,7 @@ public class EventDispatcher extends BaseEventNotifier implements Comparator<Eve
 	
 	private Timer shareTimer = Timer.instance;
 	private SimulationConfig simConfig = SimulationConfig.instance;
-	private PriorityQueue<Event> eventQueue = new PriorityQueue<Event>(0, this);
+	private PriorityQueue<Event> eventQueue = new PriorityQueue<Event>(1, this);
 	public EventDispatcher() {
 	}
 	
@@ -29,16 +29,16 @@ public class EventDispatcher extends BaseEventNotifier implements Comparator<Eve
 		if(!eventQueue.isEmpty()) {
 			Event event = eventQueue.remove();
 			if(event.isEventConditionFulfilled()) {
-				if(event.eventTime > simConfig.simulationTime) { 
+				if(event.eventTime > simConfig.simulationTime) {
 					//discard this event and dispatch EndSimulation event
-					eventHandler(genEvent(EventType.EndSimulation, simConfig.simulationTime));
+					event = genEvent(EventType.EndSimulation, simConfig.simulationTime);
 				}
-				else {
-					eventHandler(event);
-				}
+				//System.out.println("event " + event.eventType.toString() + " happen at " + event.eventTime );
+				eventHandler(event);
 			}
 		}
 		else {
+			//System.out.println("event Generate Arrival happen at " + shareTimer.currentTime() );
 			eventHandler(genEvent(EventType.GenerateArrival, shareTimer.currentTime()));
 		}
 	}

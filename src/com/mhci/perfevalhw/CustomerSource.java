@@ -25,7 +25,7 @@ public class CustomerSource implements EventListener {
 	
 	@Override
 	public void eventHandler(Event event) {
-		if(event.eventType == EventType.Arrival && event.eventSource == customerArrivalEventGenerator) {
+		if(event.eventSource == customerArrivalEventGenerator) {
 			genEventAndScheduleIt();
 		}
 		else if(event.eventType == EventType.GenerateArrival) {
@@ -38,7 +38,7 @@ public class CustomerSource implements EventListener {
 		Event event = customerArrivalEventGenerator.generateEventWithDistribution(sharedTimer.currentTime());
 		event.relatedUserInfo = new UserInfo(UserType.PostOfficeCustomer);
 		event.relatedUserInfo.setEvent(event);
-		
+		//System.out.println("arrival:" + event.eventTime);
 		sysEventDispatcher.schedule(event);
 	}
 	

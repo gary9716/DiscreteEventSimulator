@@ -9,6 +9,7 @@ import com.mhci.perfevalhw.distribution.ExponentialDistribution;
 import com.mhci.perfevalhw.distribution.PositiveNormalDistribution;
 import com.mhci.perfevalhw.enums.UserType;
 import com.mhci.perfevalhw.singleton.SimulationConfig;
+import com.mhci.perfevalhw.singleton.SimulationConfig.CustomerQueueMode;
 import com.mhci.perfevalhw.singleton.StatisticsManager;
 import com.mhci.perfevalhw.singleton.SimulationConfig.SimulationName;
 
@@ -97,6 +98,8 @@ public class FileManager {
 	public SimulationConfig getSimulationConfig(SimulationName simName) {
 		simConfig.reset();
 		simConfig.simulationName = simName;
+		simConfig.numStaffs = ProjectConfig.numStaffs;
+		
 		String[] data = readFromFileAndParse(simName.toString() + "_" + configFileName);
 		
 		try {
@@ -122,20 +125,32 @@ public class FileManager {
 						SimulationConfig.staffInterServiceTimeDistKey, 
 						new PositiveNormalDistribution(Float.valueOf(data[2]), Float.valueOf(data[3]))
 				);
+				
 				simConfig.simulationTime = Integer.parseInt(data[4]);
+				
 				simConfig.setDistribution(
 						SimulationConfig.staffInterRestTimeDistKey, 
 						new ExponentialDistribution(1 / Float.valueOf(data[5]))
 				);
+				
 				simConfig.setDistribution(
 						SimulationConfig.restroomInterServiceTimeDistKey, 
 						new ExponentialDistribution(Float.valueOf(data[6]))
 				);
+				
 			}
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+		
+		if(simName == SimulationName.Basic || simName == SimulationName.Bonus2) {
+			simConfig.customerQueueMode = CustomerQueueMode.SharedSingleQueue;
+		}
+		else {
+			simConfig.customerQueueMode = CustomerQueueMode.DividualQueue;
+		}
+		
 		
 		return simConfig;
 	}

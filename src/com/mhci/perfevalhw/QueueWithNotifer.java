@@ -26,7 +26,7 @@ public class QueueWithNotifer extends BaseEventNotifier{
 	@Override
 	public void eventHandler(Event event) {
 		if(event.eventType == EventType.Arrival && event.relatedUserInfo.mUserType == queueUserType) {
-			mQueue.add(event.relatedUserInfo);
+			mQueue.offer(event.relatedUserInfo);
 		}
 		
 		super.eventHandler(event);

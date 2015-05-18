@@ -42,6 +42,10 @@ public class StatisticsManager implements EventListener{
 		}
 		numArrivedUsers = new int[UserType.NumUserTypes.ordinal()];
 		totalWaitingTime = new float[UserType.NumUserTypes.ordinal()];
+		for(int i = 0;i < UserType.NumUserTypes.ordinal();i++) {
+			totalWaitingTime[i] = 0;
+			numArrivedUsers[i] = 0;
+		}
 		totalPostOfficeCustomersSystemTime = 0;
 		
 		currentNumWorkingStaffs = 0;
@@ -83,7 +87,18 @@ public class StatisticsManager implements EventListener{
 	//calculate metrics
 	
 	public float averageWaitingTime(UserType userType) {
-		return totalWaitingTime[userType.ordinal()] / numArrivedUsers[userType.ordinal()];
+		if(numArrivedUsers[userType.ordinal()] != 0) {
+//			if(userType == UserType.PostOfficeCustomer) {
+//				System.out.println("arrival:" + numArrivedUsers[userType.ordinal()]);
+//				System.out.println("totalWaiting:" + totalWaitingTime[userType.ordinal()]);
+//				System.out.println("departure:" + numDeparturedPostOfficeCustomers);
+//				System.out.println("totalSystem:" + totalPostOfficeCustomersSystemTime);
+//			}
+			return totalWaitingTime[userType.ordinal()] / numArrivedUsers[userType.ordinal()];
+		}
+		else {
+			return 0;
+		}
 	}
 	
 	public float averageSystemTime() {

@@ -7,7 +7,6 @@ import com.mhci.perfevalhw.QueueWithNotifer;
 import com.mhci.perfevalhw.UserInfo;
 import com.mhci.perfevalhw.BaseClass.BaseEventGenerator;
 import com.mhci.perfevalhw.enums.EventType;
-import com.mhci.perfevalhw.interfaces.EventGenerator;
 import com.mhci.perfevalhw.interfaces.EventListener;
 import com.mhci.perfevalhw.singleton.EventDispatcher;
 import com.mhci.perfevalhw.singleton.StatisticsManager;
@@ -68,7 +67,6 @@ public abstract class AbstractServer implements EventListener{
 		Event event = servicedUserDepartureEventGenerator.generateEventWithDistribution(sharedTimer.currentTime());
 		event.relatedUserInfo = currentServicedUserInfo;
 		currentServicedUserInfo.setEvent(event);
-		
 		sysEventDispatcher.schedule(event);
 	}
 	

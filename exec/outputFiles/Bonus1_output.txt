@@ -1,0 +1,4 @@
+Average customer waiting time: 0.42675388
+Average system time: 0.9233765
+System utilization ratio: 0.9491673
+Full utilization ratio: 0.5506249

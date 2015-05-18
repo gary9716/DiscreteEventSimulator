@@ -28,12 +28,12 @@ public class Restroom extends AbstractServer {
 		super.eventHandler(event);
 		
 		if(event.eventType == EventType.Arrival && event.relatedUserInfo.mUserType == UserType.RestroomUser) {
-			mQueue.add(event.relatedUserInfo);
+			mQueue.offer(event.relatedUserInfo);
 			if(currentServicedUserInfo == null) {
 				super.tryToServiceAndScheduleNextDepartureEvent();
 			}
 		}
-		else if(event.eventType == EventType.Departure && event.eventSource == servicedUserDepartureEventGenerator) {
+		else if(event.eventSource == servicedUserDepartureEventGenerator) {
 			super.tryToServiceAndScheduleNextDepartureEvent();
 		}
 		

@@ -34,8 +34,8 @@ public class BasicStaff extends AbstractServer{
 	public void eventHandler(Event event) {
 		super.eventHandler(event);
 		
-		System.out.println("eventHandler in Basic Staff");
 		if(event.eventSource == servicedUserDepartureEventGenerator) {
+			setState(StaffState.Idle);
 			tryToServiceAndScheduleNextDepartureEvent();
 		}
 		else if(getState() == StaffState.Idle && event.eventType == EventType.Arrival && event.relatedUserInfo.mUserType == UserType.PostOfficeCustomer) {
@@ -46,7 +46,6 @@ public class BasicStaff extends AbstractServer{
 	
 	@Override
 	protected void tryToServiceAndScheduleNextDepartureEvent() {
-		System.out.println("tryToServiceAndScheduleNextDepartureEvent in Basic Staff");
 		if(super.tryToService()) { //successfully service next customer
 			setState(StaffState.Working);
 			super.scheduleNextDepartureEvent();
@@ -65,6 +64,7 @@ public class BasicStaff extends AbstractServer{
 	}
 	
 	protected void setState(StaffState state) {
+		lastState = mState;
 		mState = state;
 		if(mState == StaffState.Idle) {
 			currentServicedUserInfo = null;
@@ -79,7 +79,6 @@ public class BasicStaff extends AbstractServer{
 			}
 		}
 		
-		lastState = mState;
 	}
 	
 }

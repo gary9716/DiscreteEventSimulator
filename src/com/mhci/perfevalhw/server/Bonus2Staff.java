@@ -30,6 +30,7 @@ public class Bonus2Staff extends BasicStaff implements ConditionChecker{
 		Event event = goRestroomEventGenerator.generateEventWithDistribution(sharedTimer.currentTime());
 		event.relatedUserInfo = new UserInfo(UserType.RestroomUser);
 		event.relatedUserInfo.userObj = this;
+		event.relatedUserInfo.setEvent(event);
 		event.setConditionChecker(this);
 		
 		sysEventDispatcher.schedule(event);
@@ -37,33 +38,33 @@ public class Bonus2Staff extends BasicStaff implements ConditionChecker{
 	
 	@Override
 	public void eventHandler(Event event) {
-		System.out.println("eventHandler in Bonus2 Staff");
-		//Staff leave the restroom
-		if(event.relatedUserInfo.userObj == this && event.eventType == EventType.Departure) {
+		if(event.eventType == EventType.Departure 
+				&& event.relatedUserInfo.mUserType == UserType.RestroomUser  
+				&& event.relatedUserInfo.userObj == this) { //Staff just leaved the restroom
 			setState(StaffState.Idle);
 			genGoToRestroomEventAndScheduleIt();
 			tryToServiceAndScheduleNextDepartureEvent();
 		}
-		
-		if(getState() == StaffState.Absent)  { //has gone to restroom
+		else if(getState() == StaffState.Absent)  { //has gone to restroom
 			return;
 		}
-		
-		if(event.eventType == EventType.GenerateArrival) {
+		else if(event.eventSource == goRestroomEventGenerator) {
+			setState(StaffState.Absent);
+		}
+		else if(event.eventType == EventType.GenerateArrival) {
 			genGoToRestroomEventAndScheduleIt();
 		}
-		
-		super.eventHandler(event);
+		else {
+			super.eventHandler(event);
+		}
 	}
 	
 	@Override
 	protected void tryToServiceAndScheduleNextDepartureEvent() {
-		System.out.println("tryToServiceAndScheduleNextDepartureEvent in Bonus2 Staff");
 		Event failedEvent = goRestroomEventGenerator.getAFailureEvent();
-		if(failedEvent != null) { 
+		if(failedEvent != null) {
 			failedEvent.eventTime = sharedTimer.currentTime();
 			sysEventDispatcher.schedule(failedEvent);
-			setState(StaffState.Absent); //go to restroom immediately
 		}
 		else {
 			super.tryToServiceAndScheduleNextDepartureEvent();
@@ -73,7 +74,7 @@ public class Bonus2Staff extends BasicStaff implements ConditionChecker{
 	@Override
 	public boolean eventCanHappen(Event event) {
 		//if staff is servicing a customer, he/she cannot go to restroom
-		if(event.eventSource == goRestroomEventGenerator && getState() == StaffState.Working) { 
+		if(event.eventSource == goRestroomEventGenerator && getState() != StaffState.Idle) { 
 			return false;
 		}
 		

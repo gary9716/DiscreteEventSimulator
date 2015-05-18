@@ -29,6 +29,7 @@ public class BaseEventNotifier implements EventNotifier, EventListener{
 		LinkedList<EventListener> listeners = listenersMap.get(eventType);
 		if(listeners == null) {
 			listeners = new LinkedList<EventListener>();
+			listenersMap.put(eventType, listeners);
 		}
 		listeners.add(listener);
 	}

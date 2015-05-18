@@ -1,13 +1,14 @@
 
 package com.mhci.perfevalhw.main;
 
+import java.io.File;
+
 import com.mhci.perfevalhw.BasePolicy;
 import com.mhci.perfevalhw.CustomerSource;
 import com.mhci.perfevalhw.FileManager;
 import com.mhci.perfevalhw.PostOffice;
 import com.mhci.perfevalhw.QueueWithNotifer;
 import com.mhci.perfevalhw.distribution.BaseDistribution;
-import com.mhci.perfevalhw.distribution.ExponentialDistribution;
 import com.mhci.perfevalhw.enums.UserType;
 import com.mhci.perfevalhw.server.BasicStaff;
 import com.mhci.perfevalhw.server.Bonus2Staff;
@@ -35,13 +36,16 @@ public class DiscreteEventSimulator {
 	}
 	
 	private void postOfficeSetup(SimulationConfig simConfig) {
-		
+		//init Staffs and PostOffice
 		int numStaffs = simConfig.numStaffs;
-		BaseDistribution staffInterRestTimeDist = simConfig.getDistribution(SimulationConfig.staffInterRestTimeDistKey);
+		BaseDistribution staffInterRestTimeDist = null;
 		BaseDistribution staffInterServiceTimeDist = simConfig.getDistribution(SimulationConfig.staffInterServiceTimeDistKey);
+		if(simConfig.simulationName == SimulationName.Bonus2) {
+			staffInterRestTimeDist = simConfig.getDistribution(SimulationConfig.staffInterRestTimeDistKey);
+		}
 		
 		Bonus2Staff[] bonus2Staffs = null;
-		if(staffInterRestTimeDist != null) {
+		if(simConfig.simulationName == SimulationName.Bonus2) {
 			bonus2Staffs = new Bonus2Staff[numStaffs];
 		}
 		else {
@@ -101,9 +105,9 @@ public class DiscreteEventSimulator {
 		}
 		sysEventDispatcher.registerEvent(statisticsManager);
 		
-		System.out.println("simulation " + simConfig.simulationName + " start");
+		System.out.println("simulation " + simConfig.simulationName + " start, total time:" + simConfig.simulationTime);
 		startSimulation(simConfig.simulationTime);
-		
+		System.out.println("simulation " + simConfig.simulationName + " end");
 		fileManager.outputResult(simConfig.simulationName);
 		
 	}
@@ -115,23 +119,26 @@ public class DiscreteEventSimulator {
 	
 	private void startSimulation(int totalSimulationTime) {
 		while(!approximateEqualZero(sharedTimer.currentTime() - totalSimulationTime)) {
+			//System.out.println("current time: " + sharedTimer.currentTime());
 			sysEventDispatcher.dispatch();
 		}
 	}
 	
 	public void startExperiment() {
-		String jarFileDirPath = null;
+		String currentProjectPath = null;
 		try {
-			jarFileDirPath = this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+			currentProjectPath = (new File(".")).getCanonicalPath();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
 		
-		String configsDirPath = jarFileDirPath + "/inputFiles";
-		String resultsDirPath = jarFileDirPath + "/outputFiles";
-		FileManager fileManager = new FileManager(configsDirPath, resultsDirPath);
+		
+		String configsDirPath = currentProjectPath + "/inputFiles";
+		String resultsDirPath = currentProjectPath + "/outputFiles";
+		
+		fileManager = new FileManager(configsDirPath, resultsDirPath);
 		doSimulationAndOutputResult(fileManager.getSimulationConfig(SimulationName.Basic));
 		doSimulationAndOutputResult(fileManager.getSimulationConfig(SimulationName.Bonus1));
 		doSimulationAndOutputResult(fileManager.getSimulationConfig(SimulationName.Bonus2));
@@ -139,7 +146,6 @@ public class DiscreteEventSimulator {
 	}
 	
 	public static void main(String[] args) {
-		// TODO 3 simulations, IO
 		(new DiscreteEventSimulator()).startExperiment();
 	}
 

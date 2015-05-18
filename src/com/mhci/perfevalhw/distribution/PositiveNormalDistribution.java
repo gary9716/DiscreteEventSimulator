@@ -13,7 +13,6 @@ public class PositiveNormalDistribution extends BaseDistribution {
 	
 	private final static float sqrtTwo = (float)Math.sqrt(2);
 	private final static float sqrtPi = (float)Math.sqrt(Math.PI);
-	private final static float floatPi = (float)Math.PI;
 	
 	public PositiveNormalDistribution(float meanVal, float varianceVal) {
 		mMeanVal = meanVal;
@@ -30,7 +29,7 @@ public class PositiveNormalDistribution extends BaseDistribution {
 
 	@Override
 	public float inverseCdf(HashMap<String, Number> parameters) {
-		return (float)(mMeanVal + mStddev * sqrtTwo * Erf.erfInv(2 * uniformDist.nextFloat() - 1));
+		return (float)(mMeanVal + mStddev * sqrtTwo * Erf.erfInv(2 * parameters.get(BaseDistribution.ProbabilityKey).floatValue() - 1));
 	}
 
 	@Override
